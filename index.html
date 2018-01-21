@@ -15,27 +15,35 @@
         <div id="game">
           <template v-if="health > 0">
             <nav class="navbar navbar-light bg-light">
-              <button class="btn btn-success my-2 my-sm-0 btn-lg" disabled>Your score : <span class="badge badge-light">{{ score }}</span></button>
+              <button class="btn btn-success my-2 my-sm-0 btn-lg" disabled>
+                Your score : <span class="badge badge-light">{{ score }}</span>
+              </button>
+              <button class="btn btn-primary my-2 my-sm-0 btn-lg" disabled>
+                Health <span class="badge badge-light">{{ health }}</span>
+              </button>
             </nav>
             <div class="operation-wrap">
               <h1 class="operation text-center">{{ nbr1 }} + {{ nbr2 }} = </h1>
-              <div class="input-group mb-3">
-                <input type="number" ref="answer" class="form-control" placeholder="Answer here..." v-model="answer" @keyup.enter="sendResult" :disabled="questionAnswered"/>
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-primary btn-lg" @click="sendResult" :disabled="answer == '' || questionAnswered">
-                    Send <span class="badge badge-light">{{ health }}</span>
+              <div class="form-inline answers suggestions text-center">
+                  <button
+                    v-for="sugg in getRandomIntArr"
+                    class="btn btn-primary btn-lg"
+                    @click="sendResult(sugg)"
+                    :disabled="questionAnswered"
+                    style="margin: 20px;"
+                  >
+                    {{ sugg }}
                   </button>
-                </div>
               </div>
             </div>
 
             <div class="time">Time remaining {{ time }}s</div>
 
-            <div class="progress" style="height: 1px;">
+            <div class="progress" style="height: 3px;">
               <div class="progress-bar progress-bar-striped progress-bar-animated" :class="getProgressClass()" :style="{width: (100-(100*time/settings.timeOut))+''+'%'}" :aria-valuenow="time" aria-valuemin="0" :aria-valuemax="settings.timeOut"></div>
             </div>
 
-            <div class="messages alert" :class="messageClass()" v-if="message != ''">{{ message }} <strong v-if="getBonus()>0">Bonus + {{ getBonus() }}</strong></div>
+            <div class="messages alert" :class="messageClass()" v-if="message != ''">{{ message }} <strong v-if="getBonus()>0 && result == 'good'">Bonus + {{ getBonus() }}</strong></div>
           </template>
 
           <div class="alert alert-info" v-if="health <= 0">

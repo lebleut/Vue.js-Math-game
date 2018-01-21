@@ -13,36 +13,56 @@ new Vue({
     result:"",
     gameOver:false,
     totalTime:0,
+    theGoodAnswer:0,
+
     settings:{
-      nbrMax: 99,
+      nbrMax: 50,
       nbrMin: 1,
       timeOut: 20,
       health:3,
-      pauseAfterQuestion:1000, // 1 sec
+      pauseAfterQuestion:2000, // 1 sec
+      nbrSuggestions:6
     }
   },
 
   methods:{
-    getRandomInt: function() {
-      nbrMin = Math.ceil(this.settings.nbrMin);
-      nbrMax = Math.floor(this.settings.nbrMax);
-      return Math.floor(Math.random() * (nbrMax - nbrMin)) + nbrMin;
+    getRandomInt: function(min, max, except) {
+      /* Returns a random int in a range from 'min' to 'max' and not including 'except' */
+      if( min === undefined ){
+        nbrMin = this.settings.nbrMin
+      }else{
+        nbrMin = min
+      }
+      
+      if( max === undefined ){
+        nbrMax = this.settings.nbrMax
+      }else{
+        nbrMax = max
+      }
+
+      var ret
+
+      do{
+        ret = Math.floor(Math.random() * (nbrMax - nbrMin)) + nbrMin
+      }while(except != undefined && except.includes(ret) )
+
+      return ret
     },
-    sendResult: function(){
+    sendResult: function(ans){
+      this.answer = ans
+      
       if( this.answer == "" && this.time > 0 ){
         return false
       }
 
       clearInterval(timeInertval)
 
-      var theGoodAnswer = this.nbr1+this.nbr2
-
-      if( this.answer == theGoodAnswer ){
+      if( this.answer == this.theGoodAnswer ){
         this.goodAnswer()
       }else if( this.answer == "" && this.time == 0 ){
         this.timeOutAnswer()
       }else{
-        this.badAnswer(theGoodAnswer)
+        this.badAnswer(this.theGoodAnswer)
       }
 
       this.questionAnswered = true
@@ -90,12 +110,6 @@ new Vue({
       this.message = ""
       this.time = this.settings.timeOut
       this.setTimer()
-
-      self = this
-      setTimeout(function(){
-        self.$refs.answer.focus();        
-      },100);
-
     },
     setTimer: function(){
       self = this
@@ -148,7 +162,23 @@ new Vue({
       }
     }
   },
+  computed:{
+    getRandomIntArr:function(){
+      var arrLn = this.settings.nbrSuggestions
+      var min = this.nbrMin
+      var max = 2 * this.theGoodAnswer
 
+      var ret = [this.theGoodAnswer]
+
+      for (var i = arrLn - 2; i >= 0; i--) {
+        ret.push( this.getRandomInt( min, max, ret ) )
+      }
+      /* Shuffle array order */
+      ret = ret.sort(() => Math.random() * 2 - 1).sort(() => Math.random() * 2 - 1)
+      return ret
+    },
+
+  },
   mounted: function(){
     this.initGame()
   },
@@ -156,13 +186,16 @@ new Vue({
   watch:{
     time: function (tm, oldVal) {
       if( tm == 0 ){
-        this.sendResult()
+        this.sendResult("")
       }
     },
     health: function(hlt, oldVal){
       if( hlt == 0 ){
         this.endGame()
       }
+    },
+    nbr1: function(){
+      this.theGoodAnswer = this.nbr1+this.nbr2
     }
   }
 });

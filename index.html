@@ -1,76 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
-    <title>Math Game</title>
-  </head>
-  <body>
-
-    <main role="main">
-      <div class="container">
-        <div id="game">
-          <template v-if="health > 0">
-            <nav class="navbar navbar-light bg-light">
-              <button class="btn btn-success my-2 my-sm-0 btn-lg" disabled>
-                Your score : <span class="badge badge-light">{{ score }}</span>
-              </button>
-              <button class="btn btn-primary my-2 my-sm-0 btn-lg" disabled>
-                Health <span class="badge badge-light">{{ health }}</span>
-              </button>
-            </nav>
-            <div class="operation-wrap">
-              <h1 class="operation text-center">{{ nbr1 }} + {{ nbr2 }} = </h1>
-              <div class="form-inline answers suggestions text-center">
-                  <button
-                    v-for="sugg in getRandomIntArr"
-                    class="btn btn-primary btn-lg"
-                    @click="sendResult(sugg)"
-                    :disabled="questionAnswered"
-                    style="margin: 20px;"
-                  >
-                    {{ sugg }}
-                  </button>
-              </div>
-            </div>
-
-            <div class="time">Time remaining {{ time }}s</div>
-
-            <div class="progress" style="height: 3px;">
-              <div class="progress-bar progress-bar-striped progress-bar-animated" :class="getProgressClass()" :style="{width: (100-(100*time/settings.timeOut))+''+'%'}" :aria-valuenow="time" aria-valuemin="0" :aria-valuemax="settings.timeOut"></div>
-            </div>
-
-            <div class="messages alert" :class="messageClass()" v-if="message != ''">{{ message }} <strong v-if="getBonus()>0 && result == 'good'">Bonus + {{ getBonus() }}</strong></div>
-          </template>
-
-          <div class="alert alert-info" v-if="health <= 0">
-
-            <h4>Stats</h4>
-            <button type="button" class="btn btn-primary btn-lg text-center" @click="initGame">New Game</button>
-            <ul class="list-group">
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Score
-                <span class="badge badge-primary badge-pill">{{ score }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Health
-                <span class="badge badge-primary badge-pill">{{ health }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Total Time
-                <span class="badge badge-primary badge-pill">{{ totalTime }}</span>
-              </li>              
-            </ul>
-          </div>
-
-        </div>
-      </div>
-    </main>
-    <script src="app.js"></script>
-
-  </body>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<title>Math Game Vue.js</title>
+</head>
+<body>
+	<main role="main">
+		<div class="container">
+			<div id="app"></div>
+		</div>
+	</div>
+	<script src="/dist/build.js"></script>
+</body>
 </html>
-

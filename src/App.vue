@@ -1,0 +1,266 @@
+<template>
+  <div id="app">
+    <j-header :score="score" :health="health"/>
+    <j-question :nbr1="nbr1" :nbr2="nbr2" />
+    <j-answer :suggestions="suggestions" :questionAnswered="questionAnswered" />
+    <j-timer :remaining="time" :settings="settings" :getProgressClass="getProgressClass" :messageClass="messageClass" :getBonus="getBonus" :notification="notification" :result="result" />
+  </div>
+</template>
+
+<script>
+import Header from './components/Header.vue'
+import Question from './components/Question.vue'
+import Answer from './components/Answer.vue'
+import Timer from './components/Timer.vue'
+
+import { eventBus } from "./main.js"
+
+export default {
+  name: 'app',
+  data () {
+    return {
+      nbr1: 0,
+      nbr2: 0,
+      playerAnswer: "",
+      notification:"",
+      score: 0,
+      questionAnswered: false,
+      time: 0,
+      health: 0,
+      result:"",
+      gameOver:false,
+      totalTime:0,
+      suggestions:[],
+
+      timerInertval: null,
+
+      settings:{
+        nbrMax: 50,
+        nbrMin: 1,
+        timeOut: 10,
+        health:3,
+        pauseAfterQuestion:2000,
+        nbrSuggestions:6
+      }
+
+    }
+  },
+  components:{
+    "j-header":   Header,
+    "j-question": Question,
+    "j-answer":   Answer,
+    "j-timer":    Timer,
+  },
+  created:function(){
+    self = this
+
+    eventBus.$on("userAnswered",function(answer){
+      self.sendResult(answer)
+    })
+  },
+  methods:{
+    getRandomInt: function(min, max, except) {
+      /* Returns a random int in a range from 'min' to 'max' and not including 'except' */
+      var nbrMin,nbrMax
+
+      if( min === undefined || min == 0  ){
+        nbrMin = this.settings.nbrMin
+      }else{
+        nbrMin = min
+      }
+
+      if( max === undefined || max == 0 ){
+        nbrMax = this.settings.nbrMax
+      }else{
+        nbrMax = max
+      }
+
+      var ret
+
+      do{
+        ret = Math.floor(Math.random() * (nbrMax - nbrMin)) + nbrMin
+      }while( (except != undefined && except.includes(ret) ) )
+
+      return ret
+    },
+    sendResult: function(ans){
+      this.playerAnswer = ans
+
+      if( this.playerAnswer == "" && this.time > 0 ){
+        return false
+      }
+
+      clearInterval(this.timerInertval)
+      
+      var theAnswer = this.theGoodAnswer()
+
+      if( this.playerAnswer == theAnswer ){
+        this.goodAnswer()
+      }else if( this.playerAnswer == "" && this.time == 0 ){
+        this.timeOutAnswer()
+      }else{
+        this.badAnswer(theAnswer)
+      }
+
+      this.questionAnswered = true
+
+      var self = this
+      setTimeout(function(){
+        if( !self.gameOver ){
+          self.newQuestion()
+        }
+      }, this.settings.pauseAfterQuestion)
+    },
+    goodAnswer: function(){
+      this.result = "good"
+      this.notification = "Good answer"
+
+      this.totalTime += (this.settings.timeOut - this.time)
+
+      this.score += ( 1 + this.getBonus() )
+    },
+    getBonus:function(){
+      return this.time < (this.settings.timeOut/2) ? (this.time < (this.settings.timeOut/4) ? 0 : 1 ) : 2
+    },
+    badAnswer: function( ans ){
+      this.result = "bad"
+      this.notification = "Bad answer! the answer is ["+ans+"]"
+      this.health --
+    },
+    timeOutAnswer: function(){
+      this.result = "empty"
+      this.notification = "Time out!"
+      this.health --
+    },
+    initGame: function(){
+      this.health = this.settings.health
+      this.score = 0
+      this.gameOver = false
+      this.totalTime = 0
+
+      this.newQuestion()
+    },
+    newQuestion: function(){
+      this.nbr1 = this.getRandomInt()
+      this.nbr2 = this.getRandomInt()
+      
+      this.assignSuggestions()
+
+      this.playerAnswer = ""
+      this.questionAnswered = false
+      this.notification = ""
+      this.time = this.settings.timeOut
+      this.setTimer()
+    },
+    setTimer: function(){
+      self = this
+      this.timerInertval = setInterval(function(){
+        self.time--
+      },1000)
+    },
+    endGame: function(){
+      this.gameOver = true
+      clearInterval(this.timerInertval)
+    },
+    messageClass:function(){
+
+      switch(this.result){
+
+        case "good":
+        return "alert-success"
+        break;
+
+        case "bad":
+        return "alert-danger"
+        break;
+
+        case "empty":
+        return "alert-primary"
+        break;
+
+        default:
+        break;
+      }
+    },
+    getProgressClass:function(){
+      switch (this.getBonus()){
+        case 0:
+        return 'bg-danger'
+        break;
+
+        case 1:
+        return 'bg-warning'
+        break;
+
+        case 2:
+        return 'bg-success'
+        break;
+
+        default:
+        break;
+
+      }
+    },
+    theGoodAnswer:function(){
+      return this.nbr1 + this.nbr2
+    },
+    assignSuggestions:function(){
+      var arrLn = this.settings.nbrSuggestions
+      var min = this.settings.nbrMin
+      var theAnswer = this.theGoodAnswer()
+      var max = 2 * theAnswer
+
+      /* Debug */
+      jDebug("the good Answer ", theAnswer)
+
+      var ret = [theAnswer]
+
+      for (var i = arrLn - 2; i >= 0; i--) {
+        ret.push( this.getRandomInt( min, max, ret ) )
+      }
+
+      /* Shuffle array order */
+      ret = ret.sort(() => Math.random() * 2 - 1).sort(() => Math.random() * 2 - 1)
+
+      this.suggestions = ret
+    },
+  },
+  computed:{
+
+  },
+  mounted: function(){
+    this.initGame()
+  },
+
+  watch:{
+    time: function (tm, oldVal) {
+      if( tm == 0 ){
+        this.sendResult("")
+      }
+    },
+    health: function(hlt, oldVal){
+      if( hlt == 0 ){
+        this.endGame()
+      }
+    }
+  }
+}
+
+/* The Debug function */
+var jDebug = function(msg, val){
+  var daches = msg.split("").map(function(c){ return "-"}).join("") + "---"
+
+  console.log( "/-"+ daches )
+  console.log( "| "+msg+" : "+val+" #" )
+  console.log( "\\-"+ daches )
+}
+</script>
+
+<style type="text/css">
+body {
+  padding-top: 60px;
+}
+.operation div {
+  display: inline-block;
+}
+</style>

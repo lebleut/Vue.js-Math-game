@@ -1,6 +1,6 @@
 <template>
 	<div class="alert alert-info">
-		<h4>Stats</h4>
+		<h4>Game Over</h4>
 		<button type="button" class="btn btn-primary btn-lg text-center" @click="initGame">New Game</button>
 		<ul class="list-group">
 			<li class="list-group-item d-flex justify-content-between align-items-center">
@@ -9,7 +9,7 @@
 			</li>
 			<li class="list-group-item d-flex justify-content-between align-items-center">
 				Total Time
-				<span class="badge badge-primary badge-pill">{{ totalTime }}</span>
+				<span class="badge badge-primary badge-pill">{{ totalTime }}s</span>
 			</li>              
 		</ul>
 

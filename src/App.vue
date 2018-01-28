@@ -228,7 +228,7 @@ export default {
       var max = 2 * theAnswer
 
       /* Debug */
-      jDebug("the good Answer ", theAnswer)
+      //jDebug("the good Answer ", theAnswer)
 
       var ret = [theAnswer]
 

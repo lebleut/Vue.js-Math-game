@@ -1,9 +1,21 @@
 <template>
   <div id="app">
-    <j-header :score="score" :health="health"/>
-    <j-question :nbr1="nbr1" :nbr2="nbr2" />
-    <j-answer :suggestions="suggestions" :questionAnswered="questionAnswered" />
-    <j-timer :remaining="time" :settings="settings" :getProgressClass="getProgressClass" :messageClass="messageClass" :getBonus="getBonus" :notification="notification" :result="result" />
+    <!-- Playing section -->
+    <template  v-if="!gameOver">
+      <j-header :score="score" :health="health"/>
+      <j-question :nbr1="nbr1" :nbr2="nbr2" />
+      <j-answer :suggestions="suggestions" :questionAnswered="questionAnswered" />
+      <j-timer :remaining="time" :settings="settings" :getProgressClass="getProgressClass" :messageClass="messageClass" :getBonus="getBonus" :notification="notification" :result="result" />
+    </template>
+
+    <!-- Stats section -->
+    <template v-if="gameOver">
+      <j-stats :score="score" :totalTime="totalTime" :initGame="initGame" />
+    </template>
+
+    <!-- DEBUG section -->
+    <j-debug v-if="settings.showDebugTable"  :nbr1="nbr1" :nbr2="nbr2" :playerAnswer="playerAnswer" :notification="notification" :score="score" :questionAnswered="questionAnswered" :time="time" :health="health" :result="result" :gameOver="gameOver" :totalTime="totalTime" />
+
   </div>
 </template>
 
@@ -12,6 +24,8 @@ import Header from './components/Header.vue'
 import Question from './components/Question.vue'
 import Answer from './components/Answer.vue'
 import Timer from './components/Timer.vue'
+import Stats from './components/Stats.vue'
+import Debug from './components/Debug.vue'
 
 import { eventBus } from "./main.js"
 
@@ -37,10 +51,11 @@ export default {
       settings:{
         nbrMax: 50,
         nbrMin: 1,
-        timeOut: 10,
+        timeOut: 3,
         health:3,
         pauseAfterQuestion:2000,
-        nbrSuggestions:6
+        nbrSuggestions:6,
+        showDebugTable:false
       }
 
     }
@@ -50,6 +65,8 @@ export default {
     "j-question": Question,
     "j-answer":   Answer,
     "j-timer":    Timer,
+    "j-stats":    Stats,
+    "j-debug":    Debug,
   },
   created:function(){
     self = this

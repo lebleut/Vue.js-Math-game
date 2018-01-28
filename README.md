@@ -15,4 +15,8 @@ npm run dev
 npm run build
 ```
 
+## debugging
+
+Set the `settings.showDebugTable` data variable to `true` to see the Debug table below the game.
+
 For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).

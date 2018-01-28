@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <!-- Playing section -->
-    <template  v-if="!gameOver">
+    <template  v-if="!gameOver && !newLevel">
       <j-header :score="score" :health="health"/>
       <j-question :nbr1="nbr1" :nbr2="nbr2" />
       <j-answer :suggestions="suggestions" :questionAnswered="questionAnswered" />
@@ -13,8 +13,12 @@
       <j-stats :score="score" :totalTime="totalTime" :initGame="initGame" />
     </template>
 
+    <!-- New level alert -->
+      <div v-show="newLevel" class="new-level alert alert-success text-center" role="alert">
+        <h4 class="alert-heading">Level {{ gameLevel+1 }}</h4>
+      </div>
     <!-- DEBUG section -->
-    <j-debug v-if="settings.showDebugTable"  :nbr1="nbr1" :nbr2="nbr2" :playerAnswer="playerAnswer" :notification="notification" :score="score" :questionAnswered="questionAnswered" :time="time" :health="health" :result="result" :gameOver="gameOver" :totalTime="totalTime" />
+    <j-debug v-if="settings.showDebugTable" :gameLevel="gameLevel" :nbr1="nbr1" :nbr2="nbr2" :playerAnswer="playerAnswer" :notification="notification" :score="score" :questionAnswered="questionAnswered" :time="time" :health="health" :result="result" :gameOver="gameOver" :totalTime="totalTime" />
 
   </div>
 </template>
@@ -45,17 +49,36 @@ export default {
       gameOver:false,
       totalTime:0,
       suggestions:[],
+      tries:0,
+      gameLevel:0,
+      newLevel:false,
 
       timerInertval: null,
 
       settings:{
-        nbrMax: 50,
-        nbrMin: 1,
         timeOut: 20,
         health:3,
         pauseAfterQuestion:2000,
         nbrSuggestions:6,
-        showDebugTable:false
+        showDebugTable:true,
+        levels:[
+          {
+            nbrMin: 1,
+            nbrMax: 10,
+          },
+          {
+            nbrMin: 10,
+            nbrMax: 50,
+          },
+          {
+            nbrMin: 50,
+            nbrMax: 100,
+          },
+          {
+            nbrMin: 100,
+            nbrMax: 200,
+          },
+        ],
       }
 
     }
@@ -79,15 +102,16 @@ export default {
     getRandomInt: function(min, max, except) {
       /* Returns a random int in a range from 'min' to 'max' and not including 'except' */
       var nbrMin,nbrMax
+      var currentLevel = this.settings.levels[ this.gameLevel ]
 
       if( min === undefined || min == 0  ){
-        nbrMin = this.settings.nbrMin
+        nbrMin = currentLevel.nbrMin
       }else{
         nbrMin = min
       }
 
       if( max === undefined || max == 0 ){
-        nbrMax = this.settings.nbrMax
+        nbrMax = currentLevel.nbrMax
       }else{
         nbrMax = max
       }
@@ -101,6 +125,9 @@ export default {
       return ret
     },
     sendResult: function(ans){
+
+      this.tries++
+
       this.playerAnswer = ans
 
       if( this.playerAnswer == "" && this.time > 0 ){
@@ -126,7 +153,7 @@ export default {
         if( !self.gameOver ){
           self.newQuestion()
         }
-      }, this.settings.pauseAfterQuestion)
+      }, self.settings.pauseAfterQuestion)
     },
     goodAnswer: function(){
       this.result = "good"
@@ -223,7 +250,10 @@ export default {
     },
     assignSuggestions:function(){
       var arrLn = this.settings.nbrSuggestions
-      var min = this.settings.nbrMin
+
+      var currentLevel = this.settings.levels[ this.gameLevel ]
+
+      var min = currentLevel.nbrMin
       var theAnswer = this.theGoodAnswer()
       var max = 2 * theAnswer
 
@@ -259,6 +289,27 @@ export default {
       if( hlt == 0 ){
         this.endGame()
       }
+    },
+    tries: function(tries){
+      /* Change levels */
+      if( tries <= 5 ){
+        this.gameLevel = 0
+      }else if( tries <= 10 ){
+        this.gameLevel = 1        
+      }else if( tries <= 15 ){
+        this.gameLevel = 2        
+      }else if( tries <= 20 ){
+        this.gameLevel = 3        
+      }
+    },
+    gameLevel:function(lvl){
+      self = this
+      
+      self.newLevel = true
+
+      setTimeout(function(){
+        self.newLevel = false
+      },self.settings.pauseAfterQuestion)
     }
   }
 }
@@ -279,5 +330,8 @@ body {
 }
 .operation div {
   display: inline-block;
+}
+.new-level .alert-heading{
+  font-size: 4rem;  
 }
 </style>

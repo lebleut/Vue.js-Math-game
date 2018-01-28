@@ -51,7 +51,7 @@ export default {
       settings:{
         nbrMax: 50,
         nbrMin: 1,
-        timeOut: 3,
+        timeOut: 20,
         health:3,
         pauseAfterQuestion:2000,
         nbrSuggestions:6,
